@@ -63,6 +63,26 @@ let signin_handler request =
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok jwt -> Dream.json ~status:`OK jwt)
 
+(* verify route *)
+let verify_handler request =
+  let () = debug "Call verify_handler" in
+  let open Yojson.Safe.Util in
+  let open LwtSyntax in
+  let* body = Dream.body request in
+  let json_res =
+    try Ok (Yojson.Safe.from_string body) with
+    | Failure _ -> Error "Invaild JSON Body" in
+  match json_res with
+  | Error e -> Dream.json ~status:`Bad_Request e
+  | Ok json -> (
+    let token = token |> member "token" |> to_string in
+    let* verify_result =
+      Dream.sql request @@ JwtService.verify_and_get_iss ~token in
+    match verify_result with
+    | Error e -> Dream.json ~status:`Forbidden e
+    | Ok -> Dream.json ~status:`OK)
+
+    
 (** get member by id route *)
 let get_by_id_handler request =
   let () = debug "Call get_by_id_handler" in
@@ -86,8 +106,8 @@ let routes =
     Dream.get "/echo" echo_handler;
     Dream.post "/signup" signup_handler;
     Dream.post "/signin" signin_handler;
-    (*Dream.post "/verify" verify_handler;*)
+    Dream.post "/verify" verify_handler;
     Dream.get "/member/:id" get_by_id_handler;
-    (*Dream.put "/member/:id" update_handler;
-    Dream.delete "/member/:id" delete_handler;*)
+    Dream.put "/member/:id" update_handler;
+    Dream.delete "/member/:id" delete_handler;
   ]

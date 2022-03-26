@@ -1,0 +1,18 @@
+package "lib" (
+  directory = "lib"
+  description = ""
+  requires =
+  "caqti-driver-sqlite3
+   dream
+   emile
+   jwto
+   lwt
+   ppx_deriving.runtime
+   ppx_rapper_lwt
+   safepass
+   uuidm"
+  archive(byte) = "auth_lib.cma"
+  archive(native) = "auth_lib.cmxa"
+  plugin(byte) = "auth_lib.cma"
+  plugin(native) = "auth_lib.cmxs"
+)

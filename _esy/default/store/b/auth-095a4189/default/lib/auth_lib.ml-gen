@@ -1,0 +1,22 @@
+(** @canonical Auth_lib.Api *)
+module Api = Auth_lib__Api
+
+
+(** @canonical Auth_lib.Domain *)
+module Domain = Auth_lib__Domain
+
+
+(** @canonical Auth_lib.Infra *)
+module Infra = Auth_lib__Infra
+
+
+(** @canonical Auth_lib.Repository *)
+module Repository = Auth_lib__Repository
+
+
+(** @canonical Auth_lib.Service *)
+module Service = Auth_lib__Service
+
+
+(** @canonical Auth_lib.Util *)
+module Util = Auth_lib__Util
