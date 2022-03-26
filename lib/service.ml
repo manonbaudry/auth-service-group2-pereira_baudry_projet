@@ -74,4 +74,29 @@ module Member (MemberRepository : Repository.MEMBER) = struct
       | Ok db_result -> Jwt.from_member db_result
       | Error _ -> Error "Wrong id")
 
+
+  let update ~email ~password ~username connection =
+    let id = D.Uuid.v4_gen E.random_seed () in
+    let hash = D.Hash.make ~seed:E.hash_seed password in
+
+    match D.Email.make email with
+    | Error e -> Lwt.return_error @@ "Invalid email: " ^ email
+    | Ok member_email -> (
+      let open Lwt in
+      MemberRepository.update ~email: member_email ~username ~hash ~id connection
+        >>= function
+        | Ok db_result -> Lwt.return_ok ()
+        | Error _ -> Lwt.return_error "Unable to update the member")
+  
+        
+  let delete ~id connection =
+    match D.Uuid.make id with
+    | Error e -> Lwt.return_error @@ "Invalid id: " ^ id
+    | Ok member_id -> (
+      let open Lwt in
+      MemberRepository.delete ~id:member_id connection
+      >|= function
+      | Ok db_result -> Jwt.from_member db_result
+      | Error _ -> Error "Wrong id")
+
 end

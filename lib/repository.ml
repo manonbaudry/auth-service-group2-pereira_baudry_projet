@@ -34,6 +34,11 @@ module type MEMBER = sig
     id:D.Uuid.t ->
     (module Rapper_helper.CONNECTION) ->
     (unit, ([> Caqti_error.call_or_retrieve] as 'err)) query_result
+
+  val delete :
+    id:D.Uuid.t ->
+    (module Rapper_helper.CONNECTION) ->
+    (unit, ([> Caqti_error.call_or_retrieve] as 'err)) query_result
 end
 
 module Member : MEMBER = struct
@@ -96,6 +101,12 @@ module Member : MEMBER = struct
           WHERE id = %Uuid{id}
           |sql}]
 
+  let delete_query =
+    let open D.Member in
+    [%rapper
+      execute
+        {sql| DELETE FROM "Member" WHERE id = %Uuid{id} |sql}]
+
   let get_by_id_query = 
     let open D.Member in
     [%rapper
@@ -110,4 +121,5 @@ module Member : MEMBER = struct
   let create = create_query
   let update = update_query
   let get_by_id = get_by_id_query
+  let delete = delete_query
 end
