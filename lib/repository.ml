@@ -15,6 +15,12 @@ module type MEMBER = sig
     (module Rapper_helper.CONNECTION) ->
     (D.Member.t, ([> Caqti_error.call_or_retrieve] as 'err)) query_result
 
+  val get_by_id_hash :
+  id:D.Uuid.t ->
+  hash:D.Hash.t ->
+  (module Rapper_helper.CONNECTION) ->
+  (D.Member.t, ([> Caqti_error.call_or_retrieve] as 'err)) query_result
+
   val create :
     id:D.Uuid.t ->
     email:D.Email.t ->
@@ -91,7 +97,19 @@ module Member : MEMBER = struct
           WHERE id = %Uuid{id}
           |sql}]
 
+  let get_by_id_hash_query = 
+    let open D.Member in
+    [%rapper
+      get_one
+        {sql| 
+          SELECT @Uuid{id}, @string?{username}, @Email{email},
+          @Hash{hash} FROM "Member" WHERE id = %Uuid{id} AND hash =
+          %Hash{hash}
+          |sql}
+        record_out]
+
   let get_by_email_hash = get_by_email_hash_query
   let create = create_query
   let update = update_query
+  let get_by_id_hash = get_by_id_hash_query
 end

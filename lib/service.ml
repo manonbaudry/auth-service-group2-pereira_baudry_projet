@@ -63,4 +63,12 @@ module Member (MemberRepository : Repository.MEMBER) = struct
       >|= function
       | Ok db_result -> Jwt.from_member db_result
       | Error _ -> Error "Wrong email or password")
+
+  let get_by_id ~id connection =
+    let open Lwt in
+    MemberRepository.get_by_id_hash ~id  connection
+      >|= function
+      | Ok db_result -> Jwt.from_member db_result
+      | Error _ -> Error "Wrong Id"
+
 end

@@ -5,6 +5,7 @@ open Infra.Log
 open Util
 
 module MemberServive = Service.Member (Repository.Member)
+module JwtService = Service.Jwt
 (** Bind dependencies *)
 
 (** Heartbeat route *)
@@ -62,10 +63,31 @@ let signin_handler request =
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok jwt -> Dream.json ~status:`OK jwt)
 
+(** get member by id route *)
+let get_by_id_handler request =
+  let () = debug "Call get_by_id_handler" in
+  let open Yojson.Safe in
+  let open LwtSyntax in
+  match Dream.header request "Authorization" with
+  | None -> Dream.json ~status:`Bad_Request "Authorization header required"
+  | Some token -> (
+    let verify_result = JwtService.verify_and_get_iss token in (** Todo on utilise verify ou l'autre ? *)
+    let id = 1 in(* todo récupérer l'id depuis l'url *)
+    let* get_by_id_result = 
+      Dream.sql request @@ MemberServive.get_by_id ~id in
+    match get_by_id_result with
+    | Error e -> Dream.json ~status:`Forbidden e
+    | Ok member -> Dream.json ~status:`OK member)
+
+
 let routes =
   [
     Dream.get "/" hello_handler;
     Dream.get "/echo" echo_handler;
     Dream.post "/signup" signup_handler;
     Dream.post "/signin" signin_handler;
+    (*Dream.post "/verify" verify_handler;*)
+    Dream.get "/member/:id" get_by_id_handler;
+    (*Dream.put "/member/:id" update_handler;
+    Dream.delete "/member/:id" delete_handler;*)
   ]
