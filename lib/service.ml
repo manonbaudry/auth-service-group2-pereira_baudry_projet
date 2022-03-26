@@ -65,10 +65,13 @@ module Member (MemberRepository : Repository.MEMBER) = struct
       | Error _ -> Error "Wrong email or password")
 
   let get_by_id ~id connection =
-    let open Lwt in
-    MemberRepository.get_by_id_hash ~id  connection
+    match D.Uuid.make id with
+    | Error e -> Lwt.return_error @@ "Invalid id: " ^ id
+    | Ok member_id -> (
+      let open Lwt in
+      MemberRepository.get_by_id ~id:member_id connection
       >|= function
       | Ok db_result -> Jwt.from_member db_result
-      | Error _ -> Error "Wrong Id"
+      | Error _ -> Error "Wrong id")
 
 end

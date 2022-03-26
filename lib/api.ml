@@ -75,14 +75,14 @@ let verify_handler request =
   match json_res with
   | Error e -> Dream.json ~status:`Bad_Request e
   | Ok json -> (
-    let token = token |> member "token" |> to_string in
+    let token = json |> member "token" |> to_string in
     let* verify_result =
-      Dream.sql request @@ JwtService.verify_and_get_iss ~token in
+      Dream.sql request @@ JwtService.verify_and_get_iss token in
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok -> Dream.json ~status:`OK)
 
-    
+
 (** get member by id route *)
 let get_by_id_handler request =
   let () = debug "Call get_by_id_handler" in
