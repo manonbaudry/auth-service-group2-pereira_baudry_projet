@@ -40,6 +40,7 @@ module Jwt = struct
     Jwto.encode Jwto.HS512 E.jwt_secret payload
 end
 
+
 module Member (MemberRepository : Repository.MEMBER) = struct
   let signup ~email ~password connection =
     let id = D.Uuid.v4_gen E.random_seed () in
@@ -53,6 +54,7 @@ module Member (MemberRepository : Repository.MEMBER) = struct
       | Ok db_result -> Lwt.return_ok ()
       | Error _ -> Lwt.return_error "Unable to create")
 
+
   let signin ~email ~password connection =
     let hash = D.Hash.make ~seed:E.hash_seed password in
     match D.Email.make email with
@@ -63,6 +65,7 @@ module Member (MemberRepository : Repository.MEMBER) = struct
       >|= function
       | Ok db_result -> Jwt.from_member db_result
       | Error _ -> Error "Wrong email or password")
+
 
   let get_by_id ~id connection =
     match D.Uuid.make id with
@@ -78,25 +81,24 @@ module Member (MemberRepository : Repository.MEMBER) = struct
   let update ~email ~password ~username connection =
     let id = D.Uuid.v4_gen E.random_seed () in
     let hash = D.Hash.make ~seed:E.hash_seed password in
-
     match D.Email.make email with
     | Error e -> Lwt.return_error @@ "Invalid email: " ^ email
     | Ok member_email -> (
       let open Lwt in
-      MemberRepository.update ~email: member_email ~username ~hash ~id connection
+      MemberRepository.update ~email:member_email ~username ~hash ~id connection
         >>= function
         | Ok db_result -> Lwt.return_ok ()
         | Error _ -> Lwt.return_error "Unable to update the member")
   
-        
+    
   let delete ~id connection =
     match D.Uuid.make id with
     | Error e -> Lwt.return_error @@ "Invalid id: " ^ id
     | Ok member_id -> (
       let open Lwt in
       MemberRepository.delete ~id:member_id connection
-      >|= function
-      | Ok db_result -> Jwt.from_member db_result
-      | Error _ -> Error "Wrong id")
+      >>= function
+      | Ok db_result ->  Lwt.return_ok ()
+      | Error _ -> Lwt.return_error "Wrong id")
 
 end

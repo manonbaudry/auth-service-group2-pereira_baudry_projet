@@ -77,8 +77,7 @@ let verify_handler request =
   | Error e -> Dream.json ~status:`Bad_Request e
   | Ok json -> (
     let token = json |> member "token" |> to_string in
-    let* verify_result =
-      Dream.sql request @@ JwtService.verify_and_get_iss ~token in
+    let verify_result = JwtService.verify_and_get_iss token in
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok  sub -> Dream.json ~status:`OK sub)
@@ -96,7 +95,7 @@ let get_by_id_handler request =
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok sub -> (
-      let id = 1 in(* todo récupérer l'id depuis l'url *)
+      let id = "1" in (* todo récupérer l'id depuis l'url *)
       let* get_by_id_result = 
         Dream.sql request @@ MemberServive.get_by_id ~id in
         match get_by_id_result with
@@ -105,25 +104,28 @@ let get_by_id_handler request =
 
 
 (** update member route *)
-let update_handler request =
+(*let update_handler request =
   let () = info "Call update_handler" in
   let open Yojson.Safe.Util in
   let open LwtSyntax in
   let* body = Dream.body request in
-  let json_res =
-    try Ok (Yojson.Safe.from_string body) with
-    | Failure _ -> Error "Invaild JSON Body" in
-  match json_res with
-  | Error e -> Dream.json ~status:`Bad_Request e
-  | Ok json -> (
-    let email = json |> member "email" |> to_string
-    and password = json |> member "password" |> to_string 
-    and username = json |> member "username" |> to_string in
-    let* update_result =
-      Dream.sql request @@ MemberServive.update ~email ~password ~username in
-    match update_result with
-    | Error e -> Dream.json ~status:`Forbidden e
-    | Ok _ -> Dream.json ~status:`OK "")
+  match Dream.header request "Authorization" with
+  | None -> Dream.json ~status:`Bad_Request "Authorization header required"
+  | Some token -> (
+    let json_res =
+      try Ok (Yojson.Safe.from_string body) with
+      | Failure _ -> Error "Invaild JSON Body" in
+    match json_res with
+    | Error e -> Dream.json ~status:`Bad_Request e
+    | Ok json -> (
+      let email = json |> member "email" |> to_string
+      and password = json |> member "password" |> to_string 
+      and username = json |> member "username" |> to_string in
+      let* update_result =
+        Dream.sql request @@ MemberServive.update ~email ~password ~username in
+      match update_result with
+      | Error e -> Dream.json ~status:`Forbidden e
+      | Ok _ -> Dream.json ~status:`OK ""))*)
 
 
 (** delete member route *)
@@ -138,9 +140,9 @@ let delete_handler request =
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok sub -> (
-      let id = 1 in(* todo récupérer l'id depuis l'url *)
+      let id = "1" in (* todo récupérer l'id depuis l'url *)
       let* delete_result = 
-        Dream.sql request @@ MemberServive.delete ~id in
+        Dream.sql request @@ MemberServive.delete ~id  in
         match delete_result with
         | Error e -> Dream.json ~status:`Forbidden e
         | Ok _ -> Dream.json ~status:`OK ""))
@@ -154,6 +156,6 @@ let routes =
     Dream.post "/signin" signin_handler;
     Dream.post "/verify" verify_handler;
     Dream.get "/member/:id" get_by_id_handler;
-    Dream.put "/member/:id" update_handler;
+   (* Dream.put "/member/:id" update_handler;*)
     Dream.delete "/member/:id" delete_handler;
   ]
