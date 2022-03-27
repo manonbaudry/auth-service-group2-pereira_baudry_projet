@@ -85,6 +85,17 @@ module Member : MEMBER = struct
           |sql}
         record_out]
 
+    let get_by_id_query =
+      let open D.Member in
+      [%rapper
+        get_one
+          {sql| 
+            SELECT @Uuid{id}, @string?{username}, @Email{email}, @Hash{hash} 
+            FROM "Member" 
+            WHERE id = %Uuid{id}
+          |sql} 
+          record_out]
+
   let create_query =
     [%rapper
       execute
@@ -107,19 +118,10 @@ module Member : MEMBER = struct
       execute
         {sql| DELETE FROM "Member" WHERE id = %Uuid{id} |sql}]
 
-  let get_by_id_query = 
-    let open D.Member in
-    [%rapper
-      get_one
-        {sql| 
-          SELECT @Uuid{id}, @string?{username}, @Email{email},
-          @Hash{hash} FROM "Member" WHERE id = %Uuid{id}
-          |sql}
-        record_out]
 
   let get_by_email_hash = get_by_email_hash_query
+  let get_by_id = get_by_id_query
   let create = create_query
   let update = update_query
-  let get_by_id = get_by_id_query
   let delete = delete_query
 end

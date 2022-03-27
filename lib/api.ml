@@ -51,7 +51,7 @@ let signin_handler request =
   let* body = Dream.body request in
   let json_res =
     try Ok (Yojson.Safe.from_string body) with
-    | Failure _ -> Error "Invaild JSON Body" in
+    | Failure _ -> Error "Invalid JSON Body" in
   match json_res with
   | Error e -> Dream.json ~status:`Bad_Request e
   | Ok json -> (
@@ -72,15 +72,15 @@ let verify_handler request =
   let* body = Dream.body request in
   let json_res =
     try Ok (Yojson.Safe.from_string body) with
-    | Failure _ -> Error "Invaild JSON Body" in
+    | Failure _ -> Error "Invalid JSON Body" in
   match json_res with
   | Error e -> Dream.json ~status:`Bad_Request e
-  | Ok json -> (
-    let token = json |> member "token" |> to_string in
+  | Ok json ->
+    let token = json |> member "jwt" |> to_string in
     let verify_result = JwtService.verify_and_get_iss token in
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
-    | Ok  sub -> Dream.json ~status:`OK sub)
+    | Ok _ -> Dream.json ~status:`OK ""
 
 
 (** get member by id route *)
@@ -90,42 +90,44 @@ let get_by_id_handler request =
   let open LwtSyntax in
   match Dream.header request "Authorization" with
   | None -> Dream.json ~status:`Bad_Request "Authorization header required"
-  | Some token -> (
-    let verify_result = JwtService.verify_and_get_iss token in (** Todo on utilise verify ou l'autre ? *)
+  | Some token -> 
+    let verify_result = JwtService.verify_and_get_iss token in
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
-    | Ok sub -> (
-      let id = "1" in (* todo récupérer l'id depuis l'url *)
-      let* get_by_id_result = 
-        Dream.sql request @@ MemberServive.get_by_id ~id in
-        match get_by_id_result with
-        | Error e -> Dream.json ~status:`Forbidden e
-        | Ok member -> Dream.json ~status:`OK member))
+    | Ok _ ->
+      let id = Dream.param request "id" in
+      let* get_by_id_result = Dream.sql request @@ MemberServive.get_by_id ~id in
+      match get_by_id_result with
+      | Error e -> Dream.json ~status:`Forbidden e
+      | Ok member -> Dream.json ~status:`OK member
 
 
 (** update member route *)
-(*let update_handler request =
-  let () = info "Call update_handler" in
+let update_handler request =
+  let () = debug "Call update_handler" in
   let open Yojson.Safe.Util in
   let open LwtSyntax in
-  let* body = Dream.body request in
   match Dream.header request "Authorization" with
   | None -> Dream.json ~status:`Bad_Request "Authorization header required"
-  | Some token -> (
-    let json_res =
-      try Ok (Yojson.Safe.from_string body) with
-      | Failure _ -> Error "Invaild JSON Body" in
-    match json_res with
-    | Error e -> Dream.json ~status:`Bad_Request e
-    | Ok json -> (
-      let email = json |> member "email" |> to_string
-      and password = json |> member "password" |> to_string 
-      and username = json |> member "username" |> to_string in
-      let* update_result =
-        Dream.sql request @@ MemberServive.update ~email ~password ~username in
-      match update_result with
-      | Error e -> Dream.json ~status:`Forbidden e
-      | Ok _ -> Dream.json ~status:`OK ""))*)
+  | Some token ->
+    let verify_result = JwtService.verify_and_get_iss token in
+    match verify_result with
+    | Error e -> Dream.json ~status:`Forbidden e
+    | Ok _ ->
+      let id = Dream.param request "id" in
+      let* body = Dream.body request in
+      let json_res = try Ok (Yojson.Safe.from_string body) with
+      | Failure _ -> Error "Invalid JSON Body" in
+      match json_res with
+      | Error e -> Dream.json ~status:`Bad_Request e
+      | Ok json ->
+        let email = json |> member "email" |> to_string
+        and password = json |> member "password" |> to_string 
+        and username = json |> member "username" |> to_string_option in
+        let* update_result = Dream.sql request @@ MemberServive.update ~id ~email ~username ~password  in
+        match update_result with
+        | Error e -> Dream.json ~status:`Forbidden e
+        | Ok _ -> Dream.json ~status:`OK ""
 
 
 (** delete member route *)
@@ -135,17 +137,16 @@ let delete_handler request =
   let open LwtSyntax in
   match Dream.header request "Authorization" with
   | None -> Dream.json ~status:`Bad_Request "Authorization header required"
-  | Some token -> (
-    let verify_result = JwtService.verify_and_get_iss token in (** Todo on utilise verify ou l'autre ? *)
+  | Some token -> 
+    let verify_result = JwtService.verify_and_get_iss token in
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
-    | Ok sub -> (
-      let id = "1" in (* todo récupérer l'id depuis l'url *)
-      let* delete_result = 
-        Dream.sql request @@ MemberServive.delete ~id  in
-        match delete_result with
-        | Error e -> Dream.json ~status:`Forbidden e
-        | Ok _ -> Dream.json ~status:`OK ""))
+    | Ok _ ->
+      let id = Dream.param request "id" in
+      let* delete_result = Dream.sql request @@ MemberServive.delete ~id  in
+      match delete_result with
+      | Error e -> Dream.json ~status:`Forbidden e
+      | Ok _ -> Dream.json ~status:`OK ""
 
 
 let routes =
@@ -156,6 +157,6 @@ let routes =
     Dream.post "/signin" signin_handler;
     Dream.post "/verify" verify_handler;
     Dream.get "/member/:id" get_by_id_handler;
-   (* Dream.put "/member/:id" update_handler;*)
+    Dream.put "/member/:id" update_handler;
     Dream.delete "/member/:id" delete_handler;
   ]
