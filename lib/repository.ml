@@ -79,7 +79,7 @@ module Member : MEMBER = struct
     [%rapper
       get_one
         {sql| 
-          SELECT @Uuid{id}, @string?{username}, @Email{email},
+          SELECT @Uuid{id}, @string?{username}, @Email{email}, @string{role},
           @Hash{hash} FROM "Member" WHERE email = %Email{email} AND hash =
           %Hash{hash}
           |sql}
@@ -90,7 +90,7 @@ module Member : MEMBER = struct
       [%rapper
         get_one
           {sql| 
-            SELECT @Uuid{id}, @string?{username}, @Email{email}, @Hash{hash} 
+            SELECT @Uuid{id}, @string?{username}, @Email{email}, @string{role}, @Hash{hash} 
             FROM "Member" 
             WHERE id = %Uuid{id}
           |sql} 
@@ -100,7 +100,7 @@ module Member : MEMBER = struct
     [%rapper
       execute
         {sql|
-          INSERT INTO "Member" (id, email, hash) VALUES  (%Uuid{id}, %Email{email}, %Hash{hash})
+          INSERT INTO "Member" (id, email, hash, role) VALUES (%Uuid{id}, %Email{email}, %Hash{hash}, "member")
           |sql}]
 
   let update_query =

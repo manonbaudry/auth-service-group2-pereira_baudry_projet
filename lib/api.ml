@@ -43,6 +43,7 @@ let signup_handler request =
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok _ -> Dream.json ~status:`Created "")
 
+
 (** Singnin route *)
 let signin_handler request =
   let () = debug "Call signin_handler" in

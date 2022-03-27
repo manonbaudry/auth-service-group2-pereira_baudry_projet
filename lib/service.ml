@@ -36,6 +36,7 @@ module Jwt = struct
         ("iss", E.app_name);
         ("iat", iat |> int_of_float |> string_of_int);
         ("exp", iat +. days_to_timestamp 3. |> int_of_float |> string_of_int);
+        ("role", D.Member.role member);
       ] in
     Jwto.encode Jwto.HS512 E.jwt_secret payload
 end
