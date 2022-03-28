@@ -4,4 +4,7 @@ CREATE TABLE "Member"
     email TEXT NOT NULL UNIQUE,
     hash TEXT NOT NULL,
     username TEXT
-)
+);
+
+ALTER TABLE "Member"
+ADD role string;

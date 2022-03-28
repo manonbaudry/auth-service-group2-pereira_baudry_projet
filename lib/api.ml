@@ -81,7 +81,7 @@ let verify_handler request =
     let verify_result = JwtService.verify_and_get_iss token in
     match verify_result with
     | Error e -> Dream.json ~status:`Forbidden e
-    | Ok _ -> Dream.json ~status:`OK ""
+    | Ok sub -> Dream.json ~status:`OK sub
 
 
 (** get member by id route *)
@@ -125,7 +125,7 @@ let update_handler request =
         let email = json |> member "email" |> to_string
         and password = json |> member "password" |> to_string 
         and username = json |> member "username" |> to_string_option in
-        let* update_result = Dream.sql request @@ MemberServive.update ~id ~email ~username ~password  in
+        let* update_result = Dream.sql request @@ MemberServive.update ~id ~email ~username ~password in
         match update_result with
         | Error e -> Dream.json ~status:`Forbidden e
         | Ok _ -> Dream.json ~status:`OK ""
@@ -144,7 +144,7 @@ let delete_handler request =
     | Error e -> Dream.json ~status:`Forbidden e
     | Ok _ ->
       let id = Dream.param request "id" in
-      let* delete_result = Dream.sql request @@ MemberServive.delete ~id  in
+      let* delete_result = Dream.sql request @@ MemberServive.delete ~id in
       match delete_result with
       | Error e -> Dream.json ~status:`Forbidden e
       | Ok _ -> Dream.json ~status:`OK ""

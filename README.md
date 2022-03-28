@@ -18,6 +18,7 @@ You will also need [Postman](https://www.postman.com/downloads/) (or similar too
 
 ## Development
 
+- install esy `npm i -g esy`
 - install: `esy install`
 - build: `esy build`
 - start: `esy start`

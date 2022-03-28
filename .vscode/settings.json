@@ -1,0 +1,6 @@
+{
+    "ocaml.sandbox": {
+        "kind": "esy",
+        "root": "${workspaceFolder:auth-service-group2-pereira_baudry_projet}"
+    }
+}
