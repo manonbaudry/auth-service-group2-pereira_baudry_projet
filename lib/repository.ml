@@ -23,6 +23,7 @@ module type MEMBER = sig
   val create :
     id:D.Uuid.t ->
     email:D.Email.t ->
+    role: string -> 
     hash:D.Hash.t ->
     (module Rapper_helper.CONNECTION) ->
     (unit, ([> Caqti_error.call_or_retrieve] as 'err)) query_result
@@ -79,7 +80,7 @@ module Member : MEMBER = struct
     [%rapper
       get_one
         {sql| 
-          SELECT @Uuid{id}, @string?{username}, @Email{email},
+          SELECT @Uuid{id}, @string?{username}, @Email{email}, @string{role}, 
           @Hash{hash} FROM "Member" WHERE email = %Email{email} AND hash =
           %Hash{hash}
           |sql}
@@ -90,7 +91,7 @@ module Member : MEMBER = struct
       [%rapper
         get_one
           {sql| 
-            SELECT @Uuid{id}, @string?{username}, @Email{email}, @Hash{hash} 
+            SELECT @Uuid{id}, @string?{username}, @Email{email}, @Hash{hash}, @string{role} 
             FROM "Member" 
             WHERE id = %Uuid{id}
           |sql} 
@@ -100,7 +101,7 @@ module Member : MEMBER = struct
     [%rapper
       execute
         {sql|
-          INSERT INTO "Member" (id, email, hash) VALUES (%Uuid{id}, %Email{email}, %Hash{hash})
+          INSERT INTO "Member" (id, email, role, hash) VALUES (%Uuid{id}, %Email{email}, %string{role}, %Hash{hash})
           |sql}]
 
   let update_query =

@@ -50,7 +50,8 @@ module Member (MemberRepository : Repository.MEMBER) = struct
     | Error e -> Lwt.return_error @@ "Invalid email: " ^ email
     | Ok member_email -> (
       let open Lwt in
-      MemberRepository.create ~id ~hash ~email:member_email connection
+      let role = "member" in
+      MemberRepository.create ~id ~email:member_email ~role ~hash connection
       >>= function
       | Ok db_result -> Lwt.return_ok ()
       | Error _ -> Lwt.return_error "Unable to create")
