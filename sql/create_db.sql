@@ -7,5 +7,5 @@ CREATE TABLE "Member"
     username TEXT
 );
 
-ALTER TABLE "Member"
-ADD role string;
+UPDATE "Member"
+SET (role) = "announcer"  WHERE id = "09ee2832-6aea-4163-acc4-442a80472171";

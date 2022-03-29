@@ -26,6 +26,24 @@ module Jwt = struct
     else
       Error "Invalid token"
 
+  let verify_and_get_role jwt =
+    let open ResultSyntax in
+    let* decoded = verify jwt in
+    let payload = Jwto.get_payload decoded in
+    let iss =
+      Option.fold ~none:"" ~some:(fun x -> x) @@ Jwto.get_claim "iss" payload
+    and exp =
+      Option.fold ~none:"" ~some:(fun x -> x) @@ Jwto.get_claim "exp" payload
+    and role =
+      Option.fold ~none:"" ~some:(fun x -> x) @@ Jwto.get_claim "role" payload
+    in
+    let exp_float =
+      Option.fold ~none:0. ~some:(fun x -> x) @@ float_of_string_opt exp in
+    if iss = E.app_name && exp_float > Unix.time () then
+      Ok role
+    else
+      Error "Invalid token"
+
   let days_to_timestamp x = x *. 86400.
 
   let from_member member =
