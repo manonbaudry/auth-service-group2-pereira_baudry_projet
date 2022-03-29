@@ -4,7 +4,7 @@ open Infra.Log
 
 module JwtService = Service.Jwt
 
-let host = "parrow-01.rmq.cloudamqp.com"
+let host = "sparrow-01.rmq.cloudamqp.com"
 
 let credentials = ("pymgrgko", "1rBW0EAK9jf1IGMVKnKJcy5N_daFPPBZ")
 
