@@ -7,5 +7,8 @@ CREATE TABLE "Member"
     username TEXT
 );
 
-UPDATE "Member"
-SET (role) = "announcer"  WHERE id = "09ee2832-6aea-4163-acc4-442a80472171";
+INSERT INTO "Member" (id, email, role, hash) 
+VALUES ("09ee2832-6aea-4163-acc4-442a80472171", "announcer@test.com", "announcer", "$2y$06$TEfjGEXnalLyGFPjZg/rYO0rgaxI262qZksbJJfpcJkDdmdYEnWKS");
+
+INSERT INTO "Member" (id, email, role, hash) 
+VALUES ("09ee2832-6aea-4163-acc4-442a80472189", "member@test.com", "member", "$2y$06$TEfjGEXnalLyGFPjZg/rYO0rgaxI262qZksbJJfpcJkDdmdYEnWKS");
